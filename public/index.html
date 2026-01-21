@@ -18,29 +18,7 @@
     </div>
 
     <div class="notice" style="margin-bottom:12px;">
-      <div class="row" style="flex-wrap:wrap; justify-content:space-between; gap:12px;">
-        <div class="row" style="flex-wrap:wrap;">
-          <span class="pill">Status</span>
-          <select id="filterStatus">
-            <option value="ActiveUpcoming">Active & Upcoming</option>
-            <option value="All">All</option>
-            <option value="Active">Active</option>
-            <option value="Upcoming">Upcoming</option>
-            <option value="Ended">Ended</option>
-          </select>
-
-          <span class="pill">Sorting</span>
-          <select id="sortBy">
-            <option value="ending">Soon ending</option>
-            <option value="new">New</option>
-            <option value="votes">Most votes</option>
-          </select>
-        </div>
-
-        <div class="row" style="flex-wrap:wrap;">
-          <button id="refreshBtn" class="btn secondary">Refresh</button>
-        </div>
-      </div>
+      <div id="filtersMount"></div>
 
       <div class="row" style="margin-top:10px; flex-wrap:wrap;">
         <span id="notice" class="muted">Loading…</span>

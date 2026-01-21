@@ -404,6 +404,33 @@ select:focus, input:focus{
   opacity: 0.9;
 }
 
+/* Force dark native UI (fixes white <select> dropdown in many browsers) */
+:root { color-scheme: dark; }
+html, body { color-scheme: dark; }
+
+/* Your select pills */
+select.pill,
+select#filterStatus,
+select#sortBy {
+  background: rgba(20, 20, 24, 0.85);
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.14);
+  outline: none;
+}
+
+/* Try to style dropdown items (works in some browsers, ignored in others) */
+select.pill option {
+  background: #0f0f14;
+  color: rgba(255,255,255,.92);
+}
+
+/* Optional: nicer focus */
+select.pill:focus {
+  border-color: rgba(246, 211, 101, .55);
+  box-shadow: 0 0 0 3px rgba(246, 211, 101, .12);
+}
+
+
 .aboutPre b {
   font-weight: 700;
 }

@@ -5,15 +5,18 @@ window.ETHOS_CONFIG = {
     explorer: "https://basescan.org",
   },
 
-  // основной + fallback (если один упал)
+  // Важно: порядок имеет значение. Берём самые стабильные вверх.
   rpcs: [
+    "https://base-rpc.publicnode.com",
+    "https://base.public.blockpi.network/v1/rpc/public",
+    "https://base.meowrpc.com",
     "https://base.llamarpc.com",
     "https://1rpc.io/base",
     "https://mainnet.base.org",
   ],
 
-  // оставим для совместимости, но код будет использовать rpcs[]
-  rpc: "https://base.llamarpc.com",
+  // оставим для обратной совместимости
+  rpc: "https://base-rpc.publicnode.com",
 
   contracts: {
     EthosWeightedPoll: {

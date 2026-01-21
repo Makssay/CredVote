@@ -1,0 +1,74 @@
+{
+  "polls": [
+    {
+      "id": "feature-priority-1",
+      "initiator": {
+        "name": "Product Team",
+        "type": "team",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://picsum.photos/200?random=2",
+        "url": "https://example.com/product",
+        "ethosProfile": "https://www.ethos.network/"
+      },
+      "question": "Which feature should we ship next?",
+      "details": "Vote based on what would bring the most value to users in the next 2 weeks.",
+      "options": ["Notifications", "Dark mode", "Mobile polish", "Invite links"]
+    },
+    {
+      "id": "community-event-1",
+      "initiator": {
+        "name": "Ethos Community",
+        "type": "community",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://picsum.photos/200?random=3",
+        "url": "https://example.com/community",
+        "ethosProfile": "https://www.ethos.network/"
+      },
+      "question": "What should be the next community event format?",
+      "details": "Pick what you’re most likely to attend. We’ll schedule based on results.",
+      "options": ["Demo night", "AMA with founders", "Workshop", "Casual meetup"]
+    },
+    {
+      "id": "branding-1",
+      "initiator": {
+        "name": "Design Guild",
+        "type": "guild",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://picsum.photos/200?random=4",
+        "url": "https://example.com/design",
+        "ethosProfile": "https://www.ethos.network/"
+      },
+      "question": "Which tagline fits Ethos best?",
+      "details": "We’ll use the top pick for the next landing page iteration.",
+      "options": ["Trust, made visible", "Reputation you can use", "Proof over hype", "Build with credibility"]
+    },
+    {
+      "id": "test-1",
+      "initiator": {
+        "name": "makssay",
+        "type": "guild",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/1988645121554870272/GPw8YHfG_400x400.jpg",
+        "url": "https://example.com/design",
+        "ethosProfile": "https://www.ethos.network/"
+      },
+      "question": "Which tagline fits Ethos best?",
+      "details": "We’ll use the top pick for the next landing page iteration.",
+      "options": ["Trust, made visible", "Reputation you can use", "Proof over hype", "Build with credibility"]
+    },
+    {
+      "id": "test-2",
+      "initiator": {
+        "name": "makssay",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/1988645121554870272/GPw8YHfG_400x400.jpg",
+        "url": "https://x.com/Makssay_eth",
+        "ethosProfile": "https://app.ethos.network/profile/x/Makssay_eth"
+      },
+      "question": "Which tagline fits Ethos best?",
+      "details": "We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.We’ll use the top pick for the next landing page iteration.",
+      "options": ["Trust, made visible", "Reputation you can use", "Proof over hype", "Build with credibility"]
+    }
+  ]
+}

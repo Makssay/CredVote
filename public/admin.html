@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ethos Admin — Create Poll (Base Mainnet)</title>
+
+  <!-- SIMPLE CLIENT GATE (anti-accidental) -->
+  <script>
+    const ADMIN_PASSWORD = "lolkek";
+    const KEY = "credvote_admin_ok";
+
+    (function gate(){
+      try{
+        const ok = sessionStorage.getItem(KEY) === "1";
+        if (ok) return;
+
+        const entered = prompt("Admin password:");
+        if (entered && entered === ADMIN_PASSWORD){
+          sessionStorage.setItem(KEY, "1");
+          return;
+        }
+        // deny
+        alert("Access denied");
+        location.replace("/");
+      }catch(_){
+        location.replace("/");
+      }
+    })();
+  </script>
+
+  <style>
+    :root{
+      --bg:#07070a;
+      --bg2:#0b0b10;
+      --stroke2:rgba(255,255,255,.08);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+      --gold1:#f6d365;
+      --gold2:#fda085;
+      --ok:#7CFFB2;
+      --bad:#ff5c7a;
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 800px at 10% 10%, rgba(246,211,101,.16), transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, rgba(253,160,133,.12), transparent 55%),
+        radial-gradient(900px 700px at 50% 100%, rgba(255,255,255,.06), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    .wrap{max-width:980px;margin:0 auto;padding:28px 18px 48px}
+    .top{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;flex-direction:column;gap:6px}
+    .brand h1{margin:0;font-size:18px;font-weight:700;letter-spacing:.3px}
+    .sub{margin:0;font-size:13px;color:var(--muted);line-height:1.35}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:999px;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      user-select:none;
+      font-size:12.5px;color: rgba(255,255,255,.85);
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);box-shadow:0 0 0 4px rgba(255,255,255,.06)}
+    .dot.ok{background:var(--ok);box-shadow:0 0 0 4px rgba(124,255,178,.12), 0 0 22px rgba(124,255,178,.25)}
+    .dot.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(255,92,122,.12), 0 0 22px rgba(255,92,122,.22)}
+
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.top{flex-direction:column;align-items:stretch}}
+
+    .card{
+      border-radius:var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .hd{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .title{display:flex;flex-direction:column;gap:4px;min-width:0}
+    .title strong{font-size:13.5px;letter-spacing:.25px}
+    .title span{color:var(--muted);font-size:12px;line-height:1.25}
+    .bd{padding:16px}
+
+    label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--muted)}
+    input,select{
+      width:100%;padding:12px 12px;border-radius:14px;
+      background: rgba(0,0,0,.28);
+      color: rgba(255,255,255,.92);
+      border:1px solid rgba(255,255,255,.12);
+      outline:none;
+    }
+    input:focus,select:focus{
+      border-color: rgba(246,211,101,.45);
+      box-shadow:0 0 0 4px rgba(246,211,101,.10);
+    }
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:640px){.row{grid-template-columns:1fr}}
+
+    .btnbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    button{
+      border:0;cursor:pointer;border-radius:999px;padding:11px 14px;
+      font-weight:600;letter-spacing:.15px;
+      color: rgba(10,10,12,.92);
+      background: linear-gradient(135deg, var(--gold1), var(--gold2));
+      box-shadow: 0 10px 30px rgba(246,211,101,.10), 0 12px 38px rgba(253,160,133,.08);
+    }
+    button.secondary{
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: 0 10px 26px rgba(0,0,0,.28);
+    }
+    button.danger{
+      background: rgba(255,92,122,.12);
+      color: rgba(255,255,255,.88);
+      border:1px solid rgba(255,92,122,.22);
+    }
+
+    .status{
+      margin-top:14px;padding:12px 12px;border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.26);
+      color: rgba(255,255,255,.84);
+      font-size:12.5px;line-height:1.35;
+      white-space:pre-wrap;word-break:break-word;
+    }
+
+    .kv{display:grid;grid-template-columns:140px 1fr;gap:10px 12px;align-items:center;font-size:12.5px}
+    .k{color:var(--muted)}
+    .v{color: rgba(255,255,255,.88); overflow:hidden; text-overflow:ellipsis}
+    .hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.35}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <h1>Ethos Admin</h1>
+        <p class="sub">Create polls on-chain (Base Mainnet). Uses oracle-signed weighted voting.</p>
+      </div>
+
+      <div class="pill" id="netPill" title="Network status">
+        <span class="dot" id="netDot"></span>
+        <span id="netText">Not connected</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="hd">
+          <div class="title">
+            <strong>Create Poll (on-chain)</strong>
+            <span>Pick from <code>data/polls.json</code> → set times/minScore → send tx</span>
+          </div>
+          <button class="secondary" id="connectBtn">Connect</button>
+        </div>
+
+        <div class="bd">
+          <label>
+            Poll (from polls.json)
+            <select id="pollSelect"></select>
+          </label>
+
+          <div class="row" style="margin-top:12px;">
+            <label>
+              Start time (local)
+              <input id="startTime" type="datetime-local" />
+            </label>
+            <label>
+              End time (local)
+              <input id="endTime" type="datetime-local" />
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <label>
+              minScore (Ethos)
+              <input id="minScore" type="number" min="0" step="1" value="0" />
+            </label>
+
+            <label>
+              Quick presets
+              <select id="presetSelect">
+                <option value="">—</option>
+                <option value="15m">Start now + 15m</option>
+                <option value="1h">Start now + 1h</option>
+                <option value="6h">Start now + 6h</option>
+                <option value="24h">Start now + 24h</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="btnbar">
+            <button id="createBtn">Create poll</button>
+            <button class="secondary" id="checkBtn">Check on-chain</button>
+            <button class="danger" id="copyIdBtn">Copy poll id</button>
+          </div>
+
+          <div class="status" id="status">Admin ready.</div>
+
+          <div class="hint">
+            Use your <b>deployer wallet</b> for createPoll (needs ETH on Base). Oracle wallet is only for server signatures later.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd">
+          <div class="title">
+            <strong>Environment</strong>
+            <span>Contract & oracle sanity checks</span>
+          </div>
+          <button class="secondary" id="refreshInfoBtn">Refresh</button>
+        </div>
+
+        <div class="bd">
+          <div class="kv">
+            <div class="k">Chain</div>
+            <div class="v" id="infoChain">—</div>
+
+            <div class="k">Contract</div>
+            <div class="v" id="infoContract">—</div>
+
+            <div class="k">Oracle signer</div>
+            <div class="v" id="infoOracle">—</div>
+
+            <div class="k">Wallet</div>
+            <div class="v" id="infoWallet">—</div>
+          </div>
+
+          <div class="hint" style="margin-top:14px;">
+            If <code>oracleSigner()</code> is not your oracle address, you pasted a wrong contract address into <code>config.js</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ethers v6 (one time) -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+
+  <!-- local files -->
+  <script src="./config.js"></script>
+  <script src="./ethosPollAbi.js"></script>
+  <script src="./chain.js"></script>
+  <script src="./admin.js"></script>
+
+  <!-- extras: presets + copy -->
+  <script>
+    function nowPlus(seconds) {
+      const d = new Date(Date.now() + seconds * 1000);
+      const pad = (n) => String(n).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      const mm = pad(d.getMonth() + 1);
+      const dd = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const preset = document.getElementById("presetSelect");
+      preset?.addEventListener("change", () => {
+        const v = preset.value;
+        if (!v) return;
+        document.getElementById("startTime").value = nowPlus(0);
+
+        const map = { "15m": 15 * 60, "1h": 60 * 60, "6h": 6 * 60 * 60, "24h": 24 * 60 * 60 };
+        document.getElementById("endTime").value = nowPlus(map[v] || 3600);
+        preset.value = "";
+      });
+
+      document.getElementById("copyIdBtn")?.addEventListener("click", async () => {
+        const sel = document.getElementById("pollSelect");
+        const id = sel?.value || "";
+        try { await navigator.clipboard.writeText(id); } catch (_) {}
+      });
+    });
+  </script>
+</body>
+</html>

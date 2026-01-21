@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CredVote</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand">CredVote</div>
+      <div class="row" style="flex-wrap:wrap; justify-content:flex-end;">
+        <button id="aboutBtn" class="btn secondary">About CredVote</button>
+        <span id="walletLabel" class="pill">Not connected</span>
+        <button id="connectBtn" class="btn secondary">Connect</button>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-bottom:12px;">
+      <div class="row" style="flex-wrap:wrap; justify-content:space-between; gap:12px;">
+        <div class="row" style="flex-wrap:wrap;">
+          <span class="pill">Status</span>
+          <select id="filterStatus">
+            <option value="ActiveUpcoming">Active & Upcoming</option>
+            <option value="All">All</option>
+            <option value="Active">Active</option>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Ended">Ended</option>
+          </select>
+
+          <span class="pill">Sorting</span>
+          <select id="sortBy">
+            <option value="ending">Soon ending</option>
+            <option value="new">New</option>
+            <option value="votes">Most votes</option>
+          </select>
+        </div>
+
+        <div class="row" style="flex-wrap:wrap;">
+          <button id="refreshBtn" class="btn secondary">Refresh</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px; flex-wrap:wrap;">
+        <span id="notice" class="muted">Loading…</span>
+      </div>
+    </div>
+
+    <div id="pollGrid" class="grid"></div>
+
+    <div class="footer">
+      <div class="built">
+        Built on Ethos &amp; Base
+        <div>
+          Want to create your own poll? DM me on
+          <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">X</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modalOverlay" id="aboutModal">
+    <div class="modal">
+      <div class="modalCard">
+        <div class="modalHd">
+          <h3 class="modalTitle">About CredVote</h3>
+          <button class="btn secondary" id="aboutCloseBtn">Close</button>
+        </div>
+        <div class="modalBody" id="aboutText"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script src="/config.js"></script>
+  <script src="/ethosPollAbi.js"></script>
+  <script src="/app.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("connectBtn");
+      if (btn && window.APP_UTILS?.connectWallet) btn.onclick = window.APP_UTILS.connectWallet;
+    });
+  </script>
+</body>
+</html>

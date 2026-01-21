@@ -200,6 +200,11 @@ function renderFilters(state) {
         <option value="new">New</option>
       </select>
 
+      <label class="pill" style="gap:10px; cursor:pointer;">
+        <input id="showNotCreated" type="checkbox" style="transform:scale(1.1);" />
+        Show not created
+      </label>
+
       <button id="refreshBtn" class="btn secondary">Refresh</button>
     </div>
   `;
@@ -467,6 +472,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (state.polls && state.polls.length) renderAll(state);
   }, 1000);
 });
+
 
 
 

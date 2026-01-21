@@ -326,38 +326,50 @@ function initAboutModal() {
 
   // ✅ ENGLISH TEXT
   text.innerHTML = `
-    <p>Hi from CredVote! This is a platform where projects and individuals can post a question and collect feedback from verified web users.
-    For user verification, we use Ethos — you can set any minimum Score requirement for your poll.</p>
+    <div class="aboutText">
+      <p>
+        Hi from CredVote! This is a platform where projects and individuals can post a question and collect feedback from verified web users.
+        For user verification, we use Ethos — you can set any minimum Score requirement for your poll.
+      </p>
   
-    <p>Users with different scores have different voting power:<br>
-    0 = 1<br>
-    1200 = 2<br>
-    1400 = 3<br>
-    1600 = 4<br>
-    1800 = 5<br>
-    2000 = 6<br>
-    2200 = 7<br>
-    2400 = 8<br>
-    2600 = 9</p>
+      <p class="tight">Users with different scores have different voting power:</p>
+      <div class="scores">
+        <div>0 = <b>1</b></div>
+        <div>1800 = <b>5</b></div>
+        <div>1200 = <b>2</b></div>
+        <div>2000 = <b>6</b></div>
+        <div>1400 = <b>3</b></div>
+        <div>2200 = <b>7</b></div>
+        <div>1600 = <b>4</b></div>
+        <div>2400 = <b>8</b></div>
+        <div>2600 = <b>9</b></div>
+      </div>
   
-    <p>Why Ethos? Strong moderation and a high barrier to entry, which makes botting significantly harder.</p>
+      <p>
+        Why Ethos? Strong moderation and a high barrier to entry, which makes botting significantly harder.
+      </p>
   
-    <p><b># How it works:</b></p>
+      <p class="tight"><b># How it works:</b></p>
+      <ul>
+        <li>
+          You create a poll via the admin (
+          <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>
+          ): question, options, min Ethos score, timeframe.
+        </li>
+        <li>A user connects a wallet → we check their Ethos score.</li>
+        <li>If score ≥ min — they can vote, and their vote is counted with the appropriate weight.</li>
+        <li>After the poll ends, you get transparent results: votes, total weight, distribution across options.</li>
+      </ul>
   
-    <p>You create a poll via the admin (link
-      <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>):
-      question, options, min Ethos score, timeframe.</p>
-  
-    <p>A user connects a wallet → we check their Ethos score.</p>
-    <p>If score ≥ min — they can vote, and their vote is counted with the appropriate weight.</p>
-    <p>After the poll ends, you get transparent results: number of votes, total weight, and distribution across options.</p>
-  
-    <p><b># Why you’d use this</b></p>
-  
-    <p>Collect feedback fast from relevant people<br>
-    Harder to manipulate (costly entry + Ethos moderation)<br>
-    More honest outcomes thanks to “trust-weighted” voting, not just click counts</p>
+      <p class="tight"><b># Why you’d use this</b></p>
+      <p>
+        Collect feedback fast from relevant people<br>
+        Harder to manipulate (costly entry + Ethos moderation)<br>
+        More honest outcomes thanks to trust-weighted voting, not just click counts
+      </p>
+    </div>
   `;
+
 
 
 
@@ -425,5 +437,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (state.polls && state.polls.length) renderAll(state);
   }, 1000);
 });
+
 
 

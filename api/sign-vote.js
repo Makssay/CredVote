@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { ethers } from "ethers";
 import { getEthosScoreByAddress } from "./_lib/ethos.js";
 import { scoreToWeight } from "./_lib/weight.js";
@@ -97,3 +96,4 @@ export default async function handler(req, res) {
     res.status(400).json({ error: e?.message || "sign-vote error" });
   }
 }
+

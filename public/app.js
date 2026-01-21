@@ -59,37 +59,71 @@ function rpcCandidates(){
   return [...new Set([...list, ...single].filter(Boolean))];
 }
 
-async function getReadProvider(){
+async function getReadProviderCandidates() {
   const wanted = BigInt(window.ETHOS_CONFIG?.chain?.chainId || 8453);
 
-  if (window.ethereum){
-    const bp = new ethers.BrowserProvider(window.ethereum);
-    const net = await bp.getNetwork();
-    if (net?.chainId === wanted) return bp;
+  // 1) Если кошелёк на Base — можно читать через него, но всё равно проверим код ниже
+  if (window.ethereum) {
+    try {
+      const bp = new ethers.BrowserProvider(window.ethereum);
+      const net = await bp.getNetwork();
+      if (net?.chainId === wanted) return [{ type: "wallet", provider: bp }];
+    } catch (_) {}
   }
 
+  // 2) RPC фолбэки
+  const cfg = window.ETHOS_CONFIG || {};
+  const list = Array.isArray(cfg.rpcs) ? cfg.rpcs : [];
+  const single = cfg.rpc ? [cfg.rpc] : [];
+  const urls = [...new Set([...list, ...single].filter(Boolean))];
+
+  return urls.map((url) => ({ type: "rpc", url, provider: new ethers.JsonRpcProvider(url) }));
+}
+
+async function getReadProvider() {
+  const wanted = BigInt(window.ETHOS_CONFIG?.chain?.chainId || 8453);
+  const addr = window.ETHOS_CONFIG?.contracts?.EthosWeightedPoll?.address;
+  if (!addr) throw new Error("Missing contract address in config.js");
+
+  const cands = await getReadProviderCandidates();
   let lastErr = null;
-  for (const url of rpcCandidates()){
-    try{
-      const p = new ethers.JsonRpcProvider(url);
+
+  for (const cand of cands) {
+    try {
+      const p = cand.provider;
+
+      // проверка сети
       const net = await p.getNetwork();
       if (net?.chainId !== wanted) throw new Error(`RPC not Base (got ${net?.chainId})`);
-      return p;
-    }catch(e){ lastErr = e; }
+
+      // проверка живости
+      await p.getBlockNumber();
+
+      // КЛЮЧЕВОЕ: проверяем, что этот RPC реально видит код контракта
+      const code = await p.getCode(addr);
+      if (!code || code === "0x") {
+        throw new Error(`No contract code via ${cand.type === "rpc" ? cand.url : "wallet provider"}`);
+      }
+
+      return p; 
+    } catch (e) {
+      lastErr = e;
+      // пробуем следующий RPC
+    }
   }
+
   throw new Error(`All RPC endpoints failed. Last error: ${lastErr?.message || lastErr}`);
 }
 
-async function getReadContract(){
+async function getReadContract() {
   const addr = window.ETHOS_CONFIG?.contracts?.EthosWeightedPoll?.address;
   if (!addr) throw new Error("Missing contract address in config.js");
   if (!window.ETHOS_POLL_ABI) throw new Error("Missing ETHOS_POLL_ABI (ethosPollAbi.js)");
 
   const provider = await getReadProvider();
-  const code = await provider.getCode(addr);
-  if (!code || code === "0x") throw new Error(`No contract code at ${addr}. Check address/RPC.`);
   return new ethers.Contract(addr, window.ETHOS_POLL_ABI, provider);
 }
+
 
 async function mapLimit(items, limit, fn){
   const out = new Array(items.length);
@@ -369,3 +403,4 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setInterval(() => render(state), 1000);
 });
+

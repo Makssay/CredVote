@@ -280,6 +280,70 @@ function renderAll(state) {
   `;
 }
 
+function initAboutModal() {
+  const btn = document.getElementById("aboutBtn");
+  const modal = document.getElementById("aboutModal");
+  const closeBtn = document.getElementById("aboutCloseBtn");
+  const text = document.getElementById("aboutText");
+
+  if (!btn || !modal || !closeBtn || !text) return;
+
+  // Текст модалки (как ты просил)
+  text.innerHTML = `
+    <p>Привет от CredVote! Это платформа где проекты и люди могу разместить свой вопрос и получить мнение от проверенных веб юзеров.
+    Для проверки юзеров мы используем Ethos, вы можете выбрать абсолютно любое ограничение по Score для своего голосования.</p>
+
+    <p>Люди с разным скором имеют разную силу голоса:<br>
+    0 = 1<br>
+    1200 = 2<br>
+    1400 = 3<br>
+    1600 = 4<br>
+    1800 = 5<br>
+    2000 = 6<br>
+    2200 = 7<br>
+    2400 = 8<br>
+    2600 = 9</p>
+
+    <p>Почему Ethos? Отличная модерация и тяжелый порог входа, что даёт высокую вероятность отсеивная ботов.</p>
+
+    <p><b># Как это работает:</b></p>
+
+    <p>Вы создаёте голосование через админа (ссылка
+      <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>):
+      вопрос, варианты, min Ethos score, сроки.</p>
+
+    <p>Пользователь подключает кошелёк → мы проверяем Ethos score.</p>
+    <p>Если score ≥ min — он может голосовать, а его голос считается с нужным весом.</p>
+    <p>После завершения голосования вы видите прозрачные итоги: сколько голосов, какой суммарный вес, распределение по вариантам.</p>
+
+    <p><b># Зачем это вам</b></p>
+
+    <p>Быстро собрать фидбек от релевантных людей<br>
+    Сложнее накрутить (дорогой вход + модерация Ethos)<br>
+    Честнее результаты за счёт “веса доверия”, а не просто количества кликов</p>
+  `;
+
+  const open = () => { modal.style.display = "block"; };
+  const close = () => { modal.style.display = "none"; };
+
+  btn.addEventListener("click", open);
+  closeBtn.addEventListener("click", close);
+
+  // закрытие по клику по фону
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) close();
+  });
+
+  // ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+
+  // по умолчанию скрываем (на всякий)
+  modal.style.display = "none";
+}
+
+
 async function loadAndRender(state, forceRefresh = false) {
   try {
     const notice = $("notice");
@@ -322,5 +386,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderFilters(state);
   await loadAndRender(state, false);
 });
+
 
 

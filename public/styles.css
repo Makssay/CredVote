@@ -344,3 +344,48 @@ select:focus, input:focus{
   line-height: 1.6;
   white-space: pre-wrap;
 }
+
+/* About modal content: compact spacing */
+.aboutText { 
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.aboutText p { 
+  margin: 0 0 8px; 
+}
+
+.aboutText p:last-child { 
+  margin-bottom: 0; 
+}
+
+.aboutText .tight { 
+  margin-bottom: 6px; 
+}
+
+.aboutText .scores {
+  margin: 0 0 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns = less height */
+  gap: 4px 18px;
+}
+
+.aboutText .scores div {
+  margin: 0;
+}
+
+.aboutText ul {
+  margin: 0 0 10px 16px;
+  padding: 0;
+}
+
+.aboutText li {
+  margin: 4px 0;
+}
+
+/* optional: keep modal scrollable if content still tall */
+.modalBody {
+  max-height: 70vh;
+  overflow: auto;
+}
+

@@ -389,3 +389,21 @@ select:focus, input:focus{
   overflow: auto;
 }
 
+/* About modal text — compact like screenshot */
+.aboutPre {
+  white-space: pre-wrap;     /* keeps line breaks, wraps long lines */
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.aboutPre a {
+  color: inherit;
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+.aboutPre b {
+  font-weight: 700;
+}

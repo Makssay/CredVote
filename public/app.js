@@ -178,18 +178,26 @@ async function enrichOnchain(pollsMeta) {
   return enriched;
 }
 
+/** -------- Filters UI (UPDATED) -------- */
 function renderFilters(state) {
   const mount = $("filtersMount");
   if (!mount) return;
 
   mount.innerHTML = `
-    <div class="row" style="gap:10px; flex-wrap:wrap; margin: 8px 0 14px;">
-      <span class="pill">Status:</span>
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin: 8px 0 14px; align-items:center;">
+      <span class="pill">Status</span>
       <select id="filterStatus" class="pill" style="padding:10px 12px; border-radius:999px;">
+        <option value="ActiveUpcoming">Active & Upcoming</option>
         <option value="All">All</option>
         <option value="Active">Active</option>
         <option value="Upcoming">Upcoming</option>
         <option value="Ended">Ended</option>
+      </select>
+
+      <span class="pill">Sorting</span>
+      <select id="sortBy" class="pill" style="padding:10px 12px; border-radius:999px;">
+        <option value="ending">Soon ending</option>
+        <option value="new">New</option>
       </select>
 
       <label class="pill" style="gap:10px; cursor:pointer;">
@@ -201,11 +209,17 @@ function renderFilters(state) {
     </div>
   `;
 
-  $("filterStatus").value = state.filterStatus;
-  $("showNotCreated").checked = state.showNotCreated;
+  $("filterStatus").value = state.filterStatus || "ActiveUpcoming";
+  $("sortBy").value = state.sortBy || "ending";
+  $("showNotCreated").checked = !!state.showNotCreated;
 
   $("filterStatus").addEventListener("change", (e) => {
     state.filterStatus = e.target.value;
+    renderAll(state);
+  });
+
+  $("sortBy").addEventListener("change", (e) => {
+    state.sortBy = e.target.value;
     renderAll(state);
   });
 
@@ -219,10 +233,17 @@ function renderFilters(state) {
   });
 }
 
+/** -------- Filters logic (UPDATED) -------- */
 function applyFilters(polls, state) {
   return polls.filter(p => {
     if (!state.showNotCreated && p.status === "NotCreated") return false;
+
     if (state.filterStatus === "All") return true;
+
+    if (state.filterStatus === "ActiveUpcoming") {
+      return p.status === "Active" || p.status === "Upcoming";
+    }
+
     return p.status === state.filterStatus;
   });
 }
@@ -254,7 +275,7 @@ function pollCard(p) {
     : `Not created on-chain`;
 
   const minScoreLine = (p.onchain.exists)
-    ? `<span class="pill small">minScore: ${minScore}</span>`
+    ? `<span class="pill small">Min Ethos score: ${minScore}</span>`
     : ``;
 
   const linkLine = url
@@ -299,7 +320,37 @@ function renderAll(state) {
   const notice = $("notice");
   if (!grid || !notice) return;
 
-  const filtered = applyFilters(state.polls, state);
+  let filtered = applyFilters(state.polls, state);
+
+  // ✅ sorting (UPDATED)
+  filtered = [...filtered].sort((a, b) => {
+    const aOn = !!a?.onchain?.exists;
+    const bOn = !!b?.onchain?.exists;
+
+    // push NotCreated to bottom
+    if (!aOn && bOn) return 1;
+    if (aOn && !bOn) return -1;
+
+    const aStart = Number(a?.onchain?.startTime || 0);
+    const bStart = Number(b?.onchain?.startTime || 0);
+    const aEnd = Number(a?.onchain?.endTime || 0);
+    const bEnd = Number(b?.onchain?.endTime || 0);
+
+    if (state.sortBy === "new") {
+      // newest by startTime (fallback endTime)
+      return (bStart - aStart) || (bEnd - aEnd);
+    }
+
+    // default: soon ending
+    const aEnded = a.status === "Ended";
+    const bEnded = b.status === "Ended";
+
+    if (aEnded && !bEnded) return 1;
+    if (!aEnded && bEnded) return -1;
+
+    if (aEnded && bEnded) return bEnd - aEnd; // recently ended first
+    return aEnd - bEnd; // soon ending first
+  });
 
   grid.innerHTML = "";
   for (const p of filtered) grid.appendChild(pollCard(p));
@@ -324,42 +375,37 @@ function initAboutModal() {
 
   if (!btn || !modal || !closeBtn || !text) return;
 
-  // ✅ ENGLISH TEXT
   text.innerHTML = `
     <div class="aboutPre">Hello from CredVote! This is a platform where projects and people can post a question and get opinions from verified web users.
-  
-  To verify users we use Ethos. You can choose any minimum Ethos score requirement for your poll.
-  Users with different scores have different voting power.
-  0 = 1
-  1200 = 2
-  1400 = 3
-  1600 = 4
-  1800 = 5
-  2000 = 6
-  2200 = 7
-  2400 = 8
-  2600 = 9
-  
-  <b>Why Ethos?</b>
-  Strong moderation and a high barrier to entry, which significantly reduces the chance of bot manipulation.
-  
-  <b># How it works:</b>
-  You create a poll via the admin (DM: <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>): question, options, min Ethos score, time window.
-  
-  A user connects a wallet → we check their Ethos score.
-  If score ≥ min → they can vote, and their vote is counted with the correct weight.
-  
-  After the poll ends you get transparent results: number of votes, total weight, and distribution across options.
-  
-  <b># Why this helps</b>
-  • Quickly collect feedback from relevant people
-  • Harder to manipulate (expensive entry + Ethos moderation)
-  • Fairer results thanks to “trust weight”, not just clicks</div>
+
+To verify users we use Ethos. You can choose any minimum Ethos score requirement for your poll.
+Users with different scores have different voting power.
+0 = 1
+1200 = 2
+1400 = 3
+1600 = 4
+1800 = 5
+2000 = 6
+2200 = 7
+2400 = 8
+2600 = 9
+
+<b>Why Ethos?</b>
+Strong moderation and a high barrier to entry, which significantly reduces the chance of bot manipulation.
+
+<b># How it works:</b>
+You create a poll via the admin (DM: <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>): question, options, min Ethos score, time window.
+
+A user connects a wallet → we check their Ethos score.
+If score ≥ min → they can vote, and their vote is counted with the correct weight.
+
+After the poll ends you get transparent results: number of votes, total weight, and distribution across options.
+
+<b># Why this helps</b>
+• Quickly collect feedback from relevant people
+• Harder to manipulate (expensive entry + Ethos moderation)
+• Fairer results thanks to “trust weight”, not just clicks</div>
   `;
-
-
-
-
 
   const open = () => { modal.style.display = "block"; };
   const close = () => { modal.style.display = "none"; };
@@ -413,8 +459,9 @@ window.APP_UTILS.connectWallet = connectWallet;
 document.addEventListener("DOMContentLoaded", async () => {
   const state = {
     polls: [],
-    filterStatus: "All",
+    filterStatus: "ActiveUpcoming", // ✅ default
     showNotCreated: false,
+    sortBy: "ending",               // ✅ default
   };
 
   initAboutModal();

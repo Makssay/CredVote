@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { ethers } from "ethers";
 import { getEthosScoreByAddress } from "./_lib/ethos.js";
 import { SCORE_TIERS, scoreToWeight } from "./_lib/weight.js";
@@ -67,3 +66,4 @@ export default async function handler(req, res) {
     res.status(400).json({ error: e?.message || "eligibility error" });
   }
 }
+

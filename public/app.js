@@ -1,153 +1,126 @@
+// public/app.js
 window.APP_UTILS = window.APP_UTILS || {};
-function $(id){ return document.getElementById(id); }
-function safeText(s){ return (s ?? "").toString(); }
 
-function shortAddr(a){
+function $(id) { return document.getElementById(id); }
+function safeText(s) { return (s ?? "").toString(); }
+
+function shortAddr(a) {
   if (!a || typeof a !== "string" || a.length < 10) return a || "";
-  return `${a.slice(0,6)}…${a.slice(-4)}`;
+  return `${a.slice(0, 6)}…${a.slice(-4)}`;
 }
 
-function formatDelta(secondsAbs){
-  let s = Math.floor(secondsAbs);
-  const days = Math.floor(s / 86400); s -= days * 86400;
-  const hrs  = Math.floor(s / 3600);  s -= hrs  * 3600;
-  const mins = Math.floor(s / 60);    s -= mins * 60;
-
-  const parts = [];
-  if (days) parts.push(`${days}d`);
-  if (hrs || days) parts.push(`${hrs}h`);
-  if (mins || hrs || days) parts.push(`${mins}m`);
-  parts.push(`${s}s`);
-  return parts.join(" ");
+function fmtDate(tsSec) {
+  if (!tsSec) return "—";
+  const d = new Date(Number(tsSec) * 1000);
+  return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
 }
 
-function relativeLabel(nowSec, startSec, endSec, exists){
-  if (!exists) return "Not created on-chain";
-  if (nowSec < startSec) return `Starts in ${formatDelta(startSec - nowSec)}`;
-  if (nowSec <= endSec) return `Ends in ${formatDelta(endSec - nowSec)}`;
-  return `Ended ${formatDelta(nowSec - endSec)} ago`;
-}
-
-function statusOf(now, p){
+function statusOf(now, p) {
   if (!p.exists) return "NotCreated";
   if (now < p.startTime) return "Upcoming";
   if (now > p.endTime) return "Ended";
   return "Active";
 }
 
-function badge(status){
-  let cls = "dot";
-  let label = status;
-  if (status === "Active"){ cls = "dot ok"; label = "Active"; }
-  if (status === "Upcoming"){ cls = "dot warn"; label = "Upcoming"; }
-  if (status === "Ended"){ cls = "dot bad"; label = "Ended"; }
-  if (status === "NotCreated"){ cls = "dot"; label = "Not created"; }
-  return `<span class="badge"><span class="${cls}"></span><span>${label}</span></span>`;
+function badgeHTML(status) {
+  const base = `display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);`;
+  let dot = `width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35);`;
+  let text = status;
+
+  if (status === "Active") { dot = `width:8px;height:8px;border-radius:50%;background:#7CFFB2;`; text = "Active"; }
+  if (status === "Upcoming") { dot = `width:8px;height:8px;border-radius:50%;background:#f6d365;`; text = "Upcoming"; }
+  if (status === "Ended") { dot = `width:8px;height:8px;border-radius:50%;background:#ff5c7a;`; text = "Ended"; }
+  if (status === "NotCreated") { dot = `width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);`; text = "Not created"; }
+
+  return `<span style="${base}"><span style="${dot}"></span><span>${text}</span></span>`;
 }
 
-async function loadPollsMeta(){
-  const res = await fetch("/data/polls.json", { cache:"no-store" });
+async function loadPollsMeta() {
+  const res = await fetch("/data/polls.json", { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load /data/polls.json");
   const data = await res.json();
   return Array.isArray(data) ? data : (Array.isArray(data.polls) ? data.polls : []);
 }
 
-function rpcCandidates(){
-  const cfg = window.ETHOS_CONFIG || {};
-  const list = Array.isArray(cfg.rpcs) ? cfg.rpcs : [];
-  const single = cfg.rpc ? [cfg.rpc] : [];
-  return [...new Set([...list, ...single].filter(Boolean))];
+/** ---------- RPC picker (critical for Vercel prod) ---------- */
+async function jsonRpc(url, method, params) {
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message || "RPC error");
+  return j.result;
 }
 
-async function getReadProviderCandidates() {
-  const wanted = BigInt(window.ETHOS_CONFIG?.chain?.chainId || 8453);
-
-  // 1) Если кошелёк на Base — можно читать через него, но всё равно проверим код ниже
-  if (window.ethereum) {
-    try {
-      const bp = new ethers.BrowserProvider(window.ethereum);
-      const net = await bp.getNetwork();
-      if (net?.chainId === wanted) return [{ type: "wallet", provider: bp }];
-    } catch (_) {}
-  }
-
-  // 2) RPC фолбэки
+async function pickWorkingRpc() {
   const cfg = window.ETHOS_CONFIG || {};
-  const list = Array.isArray(cfg.rpcs) ? cfg.rpcs : [];
-  const single = cfg.rpc ? [cfg.rpc] : [];
-  const urls = [...new Set([...list, ...single].filter(Boolean))];
+  const list = (cfg.rpcs && Array.isArray(cfg.rpcs) && cfg.rpcs.length)
+    ? cfg.rpcs
+    : [cfg.rpc || "https://mainnet.base.org"];
 
-  return urls.map((url) => ({ type: "rpc", url, provider: new ethers.JsonRpcProvider(url) }));
-}
-
-async function getReadProvider() {
-  const wanted = BigInt(window.ETHOS_CONFIG?.chain?.chainId || 8453);
-  const addr = window.ETHOS_CONFIG?.contracts?.EthosWeightedPoll?.address;
+  const addr = cfg?.contracts?.EthosWeightedPoll?.address;
   if (!addr) throw new Error("Missing contract address in config.js");
 
-  const cands = await getReadProviderCandidates();
-  let lastErr = null;
-
-  for (const cand of cands) {
+  for (const url of list) {
     try {
-      const p = cand.provider;
+      const chainIdHex = await jsonRpc(url, "eth_chainId", []);
+      if (chainIdHex?.toLowerCase() !== "0x2105") continue; // 8453
 
-      // проверка сети
-      const net = await p.getNetwork();
-      if (net?.chainId !== wanted) throw new Error(`RPC not Base (got ${net?.chainId})`);
-
-      // проверка живости
-      await p.getBlockNumber();
-
-      // КЛЮЧЕВОЕ: проверяем, что этот RPC реально видит код контракта
-      const code = await p.getCode(addr);
-      if (!code || code === "0x") {
-        throw new Error(`No contract code via ${cand.type === "rpc" ? cand.url : "wallet provider"}`);
+      const code = await jsonRpc(url, "eth_getCode", [addr, "latest"]);
+      if (code && code !== "0x") {
+        return url;
       }
-
-      return p; 
-    } catch (e) {
-      lastErr = e;
-      // пробуем следующий RPC
+    } catch (_) {
+      // try next
     }
   }
 
-  throw new Error(`All RPC endpoints failed. Last error: ${lastErr?.message || lastErr}`);
+  throw new Error(`No working Base RPC found (contract code is 0x on all RPCs).`);
 }
 
-async function getReadContract() {
+async function getReadProvider() {
+  const rpc = await pickWorkingRpc();
+  return { rpc, provider: new ethers.JsonRpcProvider(rpc) };
+}
+
+function getReadContract(provider) {
   const addr = window.ETHOS_CONFIG?.contracts?.EthosWeightedPoll?.address;
   if (!addr) throw new Error("Missing contract address in config.js");
   if (!window.ETHOS_POLL_ABI) throw new Error("Missing ETHOS_POLL_ABI (ethosPollAbi.js)");
-
-  const provider = await getReadProvider();
   return new ethers.Contract(addr, window.ETHOS_POLL_ABI, provider);
 }
 
-
-async function mapLimit(items, limit, fn){
+// Simple concurrency limiter
+async function mapLimit(items, limit, fn) {
   const out = new Array(items.length);
   let i = 0;
-  async function worker(){
-    while(true){
+
+  async function worker() {
+    while (true) {
       const idx = i++;
       if (idx >= items.length) return;
       out[idx] = await fn(items[idx], idx);
     }
   }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+  await Promise.all(workers);
   return out;
 }
 
-async function enrichOnchain(meta){
-  const c = await getReadContract();
-  const now = Math.floor(Date.now()/1000);
+async function enrichOnchain(pollsMeta) {
+  const { rpc, provider } = await getReadProvider();
+  const c = getReadContract(provider);
+  const now = Math.floor(Date.now() / 1000);
 
-  return await mapLimit(meta, 6, async (p) => {
-    const id32 = ethers.id(String(p.id));
+  const enriched = await mapLimit(pollsMeta, 6, async (p) => {
+    const pollIdBytes32 = ethers.id(p.id);
     let on = { exists:false, optionsCount:0, startTime:0, endTime:0, minScore:0 };
-    try{
-      const r = await c.polls(id32);
+
+    try {
+      const r = await c.polls(pollIdBytes32);
       on = {
         exists: Boolean(r[0]),
         optionsCount: Number(r[1]),
@@ -155,252 +128,199 @@ async function enrichOnchain(meta){
         endTime: Number(r[3]),
         minScore: Number(r[4]),
       };
-    }catch(_){}
+    } catch (e) {
+      // если конкретный call упал — оставляем NotCreated для этого poll
+    }
 
-    return { ...p, onchain: on, status: statusOf(now, on), _id32: id32, _totalVotes: null };
+    const status = statusOf(now, on);
+
+    return { ...p, onchain: on, status, _rpc: rpc };
+  });
+
+  return enriched;
+}
+
+function renderFilters(state) {
+  const mount = $("filtersMount");
+  if (!mount) return;
+
+  mount.innerHTML = `
+    <div class="row" style="gap:10px; flex-wrap:wrap; margin: 8px 0 14px;">
+      <span class="pill">Status:</span>
+      <select id="filterStatus" class="pill" style="padding:10px 12px; border-radius:999px;">
+        <option value="All">All</option>
+        <option value="Active">Active</option>
+        <option value="Upcoming">Upcoming</option>
+        <option value="Ended">Ended</option>
+      </select>
+
+      <label class="pill" style="gap:10px; cursor:pointer;">
+        <input id="showNotCreated" type="checkbox" style="transform:scale(1.1);" />
+        Show not created
+      </label>
+
+      <button id="refreshBtn" class="btn secondary">Refresh</button>
+    </div>
+  `;
+
+  $("filterStatus").value = state.filterStatus;
+  $("showNotCreated").checked = state.showNotCreated;
+
+  $("filterStatus").addEventListener("change", (e) => {
+    state.filterStatus = e.target.value;
+    renderAll(state);
+  });
+
+  $("showNotCreated").addEventListener("change", (e) => {
+    state.showNotCreated = e.target.checked;
+    renderAll(state);
+  });
+
+  $("refreshBtn").addEventListener("click", async () => {
+    await loadAndRender(state, true);
   });
 }
 
-async function computeTotalVotesForPoll(c, poll){
-  if (!poll?.onchain?.exists) return 0n;
-  const n = Number(poll.onchain.optionsCount || poll.options?.length || 0);
-  if (!n) return 0n;
-  const calls = [];
-  for (let i=0;i<n;i++) calls.push(c.tally(poll._id32, i));
-  const res = await Promise.all(calls);
-  let sum = 0n;
-  for (const x of res) sum += BigInt(x);
-  return sum;
+function applyFilters(polls, state) {
+  return polls.filter(p => {
+    if (!state.showNotCreated && p.status === "NotCreated") return false;
+    if (state.filterStatus === "All") return true;
+    return p.status === state.filterStatus;
+  });
 }
 
-function applyStatusFilter(items, filterStatus){
-  if (filterStatus === "All") return items.filter(p => p.status !== "NotCreated");
-  if (filterStatus === "ActiveUpcoming") return items.filter(p => (p.status === "Active" || p.status === "Upcoming"));
-  if (filterStatus === "Active") return items.filter(p => p.status === "Active");
-  if (filterStatus === "Upcoming") return items.filter(p => p.status === "Upcoming");
-  if (filterStatus === "Ended") return items.filter(p => p.status === "Ended");
-  return items;
-}
-
-function sortPolls(items, sortBy){
-  const bySoonEnding = (a,b) => {
-    const rank = (p) => {
-      if (p.status === "Active") return 0;
-      if (p.status === "Upcoming") return 1;
-      if (p.status === "Ended") return 2;
-      return 3;
-    };
-    const ra = rank(a), rb = rank(b);
-    if (ra !== rb) return ra - rb;
-
-    const ta = (a.status === "Upcoming") ? (a.onchain.startTime || 0) : (a.onchain.endTime || 0);
-    const tb = (b.status === "Upcoming") ? (b.onchain.startTime || 0) : (b.onchain.endTime || 0);
-    if (ta !== tb) return ta - tb;
-    return String(a.id).localeCompare(String(b.id));
-  };
-
-  const byNew = (a,b) => {
-    const sa = Number(a.onchain.startTime || 0);
-    const sb = Number(b.onchain.startTime || 0);
-    if (sa !== sb) return sb - sa;
-    const ea = Number(a.onchain.endTime || 0);
-    const eb = Number(b.onchain.endTime || 0);
-    if (ea !== eb) return eb - ea;
-    return String(a.id).localeCompare(String(b.id));
-  };
-
-  const byVotes = (a,b) => {
-    const va = (a._totalVotes == null) ? -1n : BigInt(a._totalVotes);
-    const vb = (b._totalVotes == null) ? -1n : BigInt(b._totalVotes);
-    if (va !== vb) return (vb > va) ? 1 : -1;
-    return bySoonEnding(a,b);
-  };
-
-  const arr = [...items];
-  if (sortBy === "new") arr.sort(byNew);
-  else if (sortBy === "votes") arr.sort(byVotes);
-  else arr.sort(bySoonEnding);
-
-  return arr;
-}
-
-function pollCard(p){
+function pollCard(p) {
   const initiatorName = safeText(p?.initiator?.name || "Unknown");
   const pfp = safeText(p?.initiator?.pfp || "");
-  const question = safeText(p?.question || p?.id);
-
-  const now = Math.floor(Date.now()/1000);
-  const rel = relativeLabel(now, p.onchain.startTime, p.onchain.endTime, p.onchain.exists);
-
+  const url = safeText(p?.initiator?.url || "");
   const minScore = Number(p?.onchain?.minScore || 0);
+  const start = p?.onchain?.startTime || 0;
+  const end = p?.onchain?.endTime || 0;
+
+  const status = p.status;
+  const badge = badgeHTML(status);
+
+  const canVote = status === "Active";
+  const canResults = status === "Ended";
+
   const voteHref = `/vote.html?id=${encodeURIComponent(p.id)}`;
 
-  const votesPill = (p._totalVotes != null)
-    ? `<span class="pill small">Votes: ${BigInt(p._totalVotes).toString()}</span>`
+  const actionHTML = canVote
+    ? `<a class="btn primary" href="${voteHref}">Vote</a>`
+    : canResults
+      ? `<a class="btn secondary" href="${voteHref}">Results</a>`
+      : `<a class="btn secondary" href="${voteHref}" style="opacity:.65; pointer-events:auto;">Details</a>`;
+
+  const timeLine = p.onchain.exists
+    ? `${fmtDate(start)} → ${fmtDate(end)}`
+    : `Not created on-chain`;
+
+  const minScoreLine = (p.onchain.exists)
+    ? `<span class="pill small">minScore: ${minScore}</span>`
     : ``;
 
-  const el = document.createElement("div");
-  el.className = "card";
-  el.innerHTML = `
-    <div class="row" style="justify-content:space-between; align-items:flex-start;">
-      <div class="cardTop">
-        <div class="pfp">${pfp ? `<img src="${pfp}" alt="" />` : ``}</div>
-        <div class="cardMeta">
-          <div class="cardTitle">${question}</div>
-          <div class="cardSub">${initiatorName}</div>
+  const linkLine = url
+    ? `<a class="pill small" href="${url}" target="_blank" rel="noreferrer">Initiator link</a>`
+    : ``;
+
+  const wrap = document.createElement("div");
+  wrap.className = "card";
+  wrap.innerHTML = `
+    <div class="cardTop" style="align-items:flex-start;">
+      <div class="pfp">${pfp ? `<img src="${pfp}" alt="" />` : ``}</div>
+      <div class="cardMeta" style="gap:10px;">
+        <div class="row" style="justify-content:space-between; gap:10px; align-items:flex-start;">
+          <div style="min-width:0;">
+            <div class="cardTitle">${safeText(p.question)}</div>
+            <div class="cardSub">${initiatorName}</div>
+          </div>
+          <div>${badge}</div>
+        </div>
+
+        <div class="muted" style="font-size:12.5px; line-height:1.35;">
+          ${timeLine}
+        </div>
+
+        <div class="row" style="gap:8px; flex-wrap:wrap;">
+          <span class="pill small">${(p.options?.length || 0)} options</span>
+          ${minScoreLine}
+          ${linkLine}
+        </div>
+
+        <div class="row" style="gap:10px; flex-wrap:wrap; margin-top:2px;">
+          ${actionHTML}
         </div>
       </div>
-      <div>${badge(p.status)}</div>
-    </div>
-
-    <div class="sepLine"></div>
-
-    <div class="row" style="flex-wrap:wrap; justify-content:space-between;">
-      <div class="muted">${rel}</div>
-    </div>
-
-    <div class="row" style="margin-top:10px; flex-wrap:wrap;">
-      ${p.onchain.exists ? `<span class="pill small">Min Ethos score: ${minScore}</span>` : ``}
-      ${votesPill}
-    </div>
-
-    <div class="row" style="margin-top:12px; justify-content:flex-end;">
-      <a class="btn primary" href="${voteHref}" style="${p.status !== "Active" ? "opacity:.65;" : ""}">Vote</a>
     </div>
   `;
-  return el;
+  return wrap;
 }
 
-function render(state){
+function renderAll(state) {
   const grid = $("pollGrid");
-  const note = $("notice");
-  if (!grid || !note) return;
+  const notice = $("notice");
+  if (!grid || !notice) return;
 
-  const filtered = applyStatusFilter(state.polls, state.filterStatus);
-  const sorted = sortPolls(filtered, state.sortBy);
+  const filtered = applyFilters(state.polls, state);
 
   grid.innerHTML = "";
-  for (const p of sorted) grid.appendChild(pollCard(p));
+  for (const p of filtered) grid.appendChild(pollCard(p));
 
+  const total = state.polls.length;
+  const shown = filtered.length;
+
+  const created = state.polls.filter(p => p.status !== "NotCreated").length;
   const active = state.polls.filter(p => p.status === "Active").length;
   const upcoming = state.polls.filter(p => p.status === "Upcoming").length;
   const ended = state.polls.filter(p => p.status === "Ended").length;
-  const total = active + upcoming + ended; // только созданные on-chain
 
-  note.textContent = `Total: ${total} • Active: ${active} • Upcoming: ${upcoming} • Ended: ${ended}`;
+  notice.innerHTML = `
+    <strong>On-chain:</strong> created ${created}/${total}.
+    <span class="muted"> Active: ${active} • Upcoming: ${upcoming} • Ended: ${ended} • Showing: ${shown}</span>
+  `;
 }
 
-async function maybeLoadVotesTotals(state){
-  if (state.sortBy !== "votes") return;
-  const c = await getReadContract();
+async function loadAndRender(state, forceRefresh = false) {
+  try {
+    const notice = $("notice");
+    if (notice) notice.textContent = forceRefresh ? "Refreshing on-chain status…" : "Loading polls…";
 
-  const candidates = state.polls.filter(p => p.onchain?.exists && p._totalVotes == null);
-  if (!candidates.length) return;
-
-  $("notice").textContent = "Loading vote totals…";
-
-  await mapLimit(candidates, 3, async (p) => {
-    p._totalVotes = await computeTotalVotesForPoll(c, p);
-  });
-}
-
-async function loadAndRender(state, refresh=false){
-  try{
-    $("notice").textContent = refresh ? "Refreshing…" : "Loading…";
     const meta = await loadPollsMeta();
     const enriched = await enrichOnchain(meta);
-    state.polls = enriched;
 
-    await maybeLoadVotesTotals(state);
-    render(state);
-  }catch(e){
-    $("notice").textContent = `RPC/Chain error: ${e?.shortMessage || e?.message || e}`;
+    state.polls = enriched;
+    renderAll(state);
+  } catch (e) {
+    const notice = $("notice");
+    if (notice) notice.textContent = `Error: ${e?.message || e}`;
   }
 }
 
-async function connectWallet(){
-  if (!window.ethereum) return alert("No wallet found. Install MetaMask/Rabby.");
+// Wallet connect (label only)
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("No wallet found. Install MetaMask/Rabby.");
+    return;
+  }
   const provider = new ethers.BrowserProvider(window.ethereum);
   await provider.send("eth_requestAccounts", []);
   const signer = await provider.getSigner();
   const addr = await signer.getAddress();
-  $("walletLabel").textContent = `Connected: ${shortAddr(addr)}`;
+  const label = $("walletLabel");
+  if (label) label.textContent = `Connected: ${shortAddr(addr)}`;
 }
+
 window.APP_UTILS.connectWallet = connectWallet;
 
-/* About modal */
-function aboutText(){
-  return [
-    "Hello from CredVote! This is a platform where projects and people can post a question and get opinions from verified web users.",
-    "",
-    "To verify users we use Ethos. You can choose any minimum Ethos score requirement for your poll.",
-    "Users with different scores have different voting power:",
-    "0 = 1",
-    "1200 = 2",
-    "1400 = 3",
-    "1600 = 4",
-    "1800 = 5",
-    "2000 = 6",
-    "2200 = 7",
-    "2400 = 8",
-    "2600 = 9",
-    "",
-    "Why Ethos?",
-    "Strong moderation and a high barrier to entry, which significantly reduces the chance of bot manipulation.",
-    "",
-    "# How it works:",
-    "You create a poll via the admin (DM: https://x.com/Makssay_eth): question, options, min Ethos score, time window.",
-    "",
-    "A user connects a wallet → we check their Ethos score.",
-    "If score ≥ min → they can vote, and their vote is counted with the correct weight.",
-    "",
-    "After the poll ends you get transparent results: number of votes, total weight, and distribution across options.",
-    "",
-    "# Why this helps",
-    "• Quickly collect feedback from relevant people",
-    "• Harder to manipulate (expensive entry + Ethos moderation)",
-    "• Fairer results thanks to “trust weight”, not just clicks"
-  ].join("\n");
-}
-
-function setupAboutModal(){
-  const modal = $("aboutModal");
-  const openBtn = $("aboutBtn");
-  const closeBtn = $("aboutCloseBtn");
-  const text = $("aboutText");
-  if (!modal || !openBtn || !closeBtn || !text) return;
-
-  text.textContent = aboutText();
-
-  function open(){
-    modal.classList.add("show");
-    document.body.style.overflow = "hidden";
-  }
-  function close(){
-    modal.classList.remove("show");
-    document.body.style.overflow = "";
-  }
-
-  openBtn.addEventListener("click", open);
-  closeBtn.addEventListener("click", close);
-  modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
-  const state = { polls: [], filterStatus: "ActiveUpcoming", sortBy: "ending" };
+  const state = {
+    polls: [],
+    filterStatus: "All",
+    showNotCreated: false,
+  };
 
-  if ($("filterStatus")) $("filterStatus").value = state.filterStatus;
-  if ($("sortBy")) $("sortBy").value = state.sortBy;
-
-  $("filterStatus")?.addEventListener("change", (e) => { state.filterStatus = e.target.value; render(state); });
-  $("sortBy")?.addEventListener("change", async (e) => { state.sortBy = e.target.value; await maybeLoadVotesTotals(state); render(state); });
-  $("refreshBtn")?.addEventListener("click", async () => { await loadAndRender(state, true); });
-
-  setupAboutModal();
-
+  renderFilters(state);
   await loadAndRender(state, false);
-
-  setInterval(() => render(state), 1000);
 });
+
 

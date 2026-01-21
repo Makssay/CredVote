@@ -178,7 +178,7 @@ async function enrichOnchain(pollsMeta) {
   return enriched;
 }
 
-/** -------- Filters UI (UPDATED) -------- */
+/** -------- Filters UI (UPDATED: no "Show not created") -------- */
 function renderFilters(state) {
   const mount = $("filtersMount");
   if (!mount) return;
@@ -200,18 +200,12 @@ function renderFilters(state) {
         <option value="new">New</option>
       </select>
 
-      <label class="pill" style="gap:10px; cursor:pointer;">
-        <input id="showNotCreated" type="checkbox" style="transform:scale(1.1);" />
-        Show not created
-      </label>
-
       <button id="refreshBtn" class="btn secondary">Refresh</button>
     </div>
   `;
 
   $("filterStatus").value = state.filterStatus || "ActiveUpcoming";
   $("sortBy").value = state.sortBy || "ending";
-  $("showNotCreated").checked = !!state.showNotCreated;
 
   $("filterStatus").addEventListener("change", (e) => {
     state.filterStatus = e.target.value;
@@ -223,20 +217,16 @@ function renderFilters(state) {
     renderAll(state);
   });
 
-  $("showNotCreated").addEventListener("change", (e) => {
-    state.showNotCreated = e.target.checked;
-    renderAll(state);
-  });
-
   $("refreshBtn").addEventListener("click", async () => {
     await loadAndRender(state, true);
   });
 }
 
-/** -------- Filters logic (UPDATED) -------- */
+/** -------- Filters logic (UPDATED: always hide NotCreated) -------- */
 function applyFilters(polls, state) {
   return polls.filter(p => {
-    if (!state.showNotCreated && p.status === "NotCreated") return false;
+    // always hide NotCreated
+    if (p.status === "NotCreated") return false;
 
     if (state.filterStatus === "All") return true;
 
@@ -322,15 +312,8 @@ function renderAll(state) {
 
   let filtered = applyFilters(state.polls, state);
 
-  // ✅ sorting (UPDATED)
+  // sorting
   filtered = [...filtered].sort((a, b) => {
-    const aOn = !!a?.onchain?.exists;
-    const bOn = !!b?.onchain?.exists;
-
-    // push NotCreated to bottom
-    if (!aOn && bOn) return 1;
-    if (aOn && !bOn) return -1;
-
     const aStart = Number(a?.onchain?.startTime || 0);
     const bStart = Number(b?.onchain?.startTime || 0);
     const aEnd = Number(a?.onchain?.endTime || 0);
@@ -345,11 +328,15 @@ function renderAll(state) {
     const aEnded = a.status === "Ended";
     const bEnded = b.status === "Ended";
 
+    // Active/Upcoming first, Ended last
     if (aEnded && !bEnded) return 1;
     if (!aEnded && bEnded) return -1;
 
-    if (aEnded && bEnded) return bEnd - aEnd; // recently ended first
-    return aEnd - bEnd; // soon ending first
+    // among Ended: most recently ended first
+    if (aEnded && bEnded) return bEnd - aEnd;
+
+    // among Active/Upcoming: soonest end first
+    return aEnd - bEnd;
   });
 
   grid.innerHTML = "";
@@ -459,9 +446,8 @@ window.APP_UTILS.connectWallet = connectWallet;
 document.addEventListener("DOMContentLoaded", async () => {
   const state = {
     polls: [],
-    filterStatus: "ActiveUpcoming", // ✅ default
-    showNotCreated: false,
-    sortBy: "ending",               // ✅ default
+    filterStatus: "ActiveUpcoming", // default
+    sortBy: "ending",               // default
   };
 
   initAboutModal();

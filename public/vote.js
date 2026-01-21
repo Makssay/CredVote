@@ -49,34 +49,34 @@ function rpcCandidates(){
   return [...new Set([...list, ...single].filter(Boolean))];
 }
 
-async function getReadProvider(){
+async function getReadProvider() {
   const wanted = BigInt(window.ETHOS_CONFIG?.chain?.chainId || 8453);
-
-  if (window.ethereum){
-    const bp = new ethers.BrowserProvider(window.ethereum);
-    const net = await bp.getNetwork();
-    if (net?.chainId === wanted) return bp;
-  }
+  const addr = window.ETHOS_CONFIG?.contracts?.EthosWeightedPoll?.address;
+  const cfg = window.ETHOS_CONFIG || {};
+  const list = Array.isArray(cfg.rpcs) ? cfg.rpcs : [];
+  const single = cfg.rpc ? [cfg.rpc] : [];
+  const urls = [...new Set([...list, ...single].filter(Boolean))];
 
   let lastErr = null;
-  for (const url of rpcCandidates()){
-    try{
+  for (const url of urls) {
+    try {
       const p = new ethers.JsonRpcProvider(url);
       const net = await p.getNetwork();
       if (net?.chainId !== wanted) throw new Error(`RPC not Base (got ${net?.chainId})`);
+      await p.getBlockNumber();
+      const code = await p.getCode(addr);
+      if (!code || code === "0x") throw new Error(`No contract code via ${url}`);
       return p;
-    }catch(e){ lastErr = e; }
+    } catch (e) { lastErr = e; }
   }
   throw new Error(`All RPC endpoints failed. Last error: ${lastErr?.message || lastErr}`);
 }
 
-async function getReadContract(){
+async function getReadContract() {
   const addr = window.ETHOS_CONFIG?.contracts?.EthosWeightedPoll?.address;
-  const provider = await getReadProvider();
-  const code = await provider.getCode(addr);
-  if (!code || code === "0x") throw new Error(`No contract code at ${addr}. Check address/RPC.`);
-  return new ethers.Contract(addr, window.ETHOS_POLL_ABI, provider);
+  return new ethers.Contract(addr, window.ETHOS_POLL_ABI, await getReadProvider());
 }
+
 
 async function getWriteContract(){
   if (!window.ethereum) throw new Error("No wallet found");
@@ -354,3 +354,4 @@ async function main(){
 }
 
 window.addEventListener("DOMContentLoaded", main);
+

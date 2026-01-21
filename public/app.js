@@ -326,58 +326,39 @@ function initAboutModal() {
 
   // ✅ ENGLISH TEXT
   text.innerHTML = `
-    <div style="max-width:760px; line-height:1.45;">
-      <p style="margin:0 0 10px;">
-        <b>CredVote</b> is a platform where projects and individuals can post a question and collect feedback from verified web users.
-        Verification is powered by <b>Ethos</b> — you can set any minimum Ethos Score requirement for your poll.
-      </p>
+    <p>Hi from CredVote! This is a platform where projects and individuals can post a question and collect feedback from verified web users.
+    For user verification, we use Ethos — you can set any minimum Score requirement for your poll.</p>
   
-      <div style="margin:12px 0 10px;">
-        <div style="font-weight:700; margin:0 0 8px;">Voting power by Ethos Score</div>
+    <p>Users with different scores have different voting power:<br>
+    0 = 1<br>
+    1200 = 2<br>
+    1400 = 3<br>
+    1600 = 4<br>
+    1800 = 5<br>
+    2000 = 6<br>
+    2200 = 7<br>
+    2400 = 8<br>
+    2600 = 9</p>
   
-        <div style="
-          display:grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap:6px 18px;
-          font-size:13px;
-          opacity:.92;
-        ">
-          <div>0 → <b>1</b></div>
-          <div>1800 → <b>5</b></div>
-          <div>1200 → <b>2</b></div>
-          <div>2000 → <b>6</b></div>
-          <div>1400 → <b>3</b></div>
-          <div>2200 → <b>7</b></div>
-          <div>1600 → <b>4</b></div>
-          <div>2400 → <b>8</b></div>
-          <div>2600 → <b>9</b></div>
-        </div>
-      </div>
+    <p>Why Ethos? Strong moderation and a high barrier to entry, which makes botting significantly harder.</p>
   
-      <p style="margin:12px 0 10px;">
-        <b>Why Ethos?</b> Strong moderation and a high barrier to entry — makes botting significantly harder.
-      </p>
+    <p><b># How it works:</b></p>
   
-      <div style="margin:12px 0 8px; font-weight:800;">How it works</div>
-      <ul style="margin:0 0 12px 18px; padding:0; line-height:1.45;">
-        <li style="margin:6px 0;">
-          Create a poll via the admin (DM
-          <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">Makssay_eth</a>):
-          question, options, min Ethos Score, time window.
-        </li>
-        <li style="margin:6px 0;">Users connect a wallet → we check their Ethos Score.</li>
-        <li style="margin:6px 0;">If score ≥ min → they can vote, and the vote is weighted accordingly.</li>
-        <li style="margin:6px 0;">After the poll ends → transparent results (votes, total weight, distribution).</li>
-      </ul>
+    <p>You create a poll via the admin (link
+      <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>):
+      question, options, min Ethos score, timeframe.</p>
   
-      <div style="margin:12px 0 8px; font-weight:800;">Why use this</div>
-      <ul style="margin:0 0 0 18px; padding:0; line-height:1.45;">
-        <li style="margin:6px 0;">Fast feedback from relevant people</li>
-        <li style="margin:6px 0;">Harder to manipulate (costly entry + Ethos moderation)</li>
-        <li style="margin:6px 0;">More honest outcomes with trust-weighted voting</li>
-      </ul>
-    </div>
+    <p>A user connects a wallet → we check their Ethos score.</p>
+    <p>If score ≥ min — they can vote, and their vote is counted with the appropriate weight.</p>
+    <p>After the poll ends, you get transparent results: number of votes, total weight, and distribution across options.</p>
+  
+    <p><b># Why you’d use this</b></p>
+  
+    <p>Collect feedback fast from relevant people<br>
+    Harder to manipulate (costly entry + Ethos moderation)<br>
+    More honest outcomes thanks to “trust-weighted” voting, not just click counts</p>
   `;
+
 
 
   const open = () => { modal.style.display = "block"; };
@@ -444,4 +425,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (state.polls && state.polls.length) renderAll(state);
   }, 1000);
 });
+
 

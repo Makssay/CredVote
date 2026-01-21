@@ -15,6 +15,44 @@ function fmtDate(tsSec) {
   return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
 }
 
+/** --------- time helpers --------- */
+function fmtDuration(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const d = Math.floor(sec / 86400); sec -= d * 86400;
+  const h = Math.floor(sec / 3600);  sec -= h * 3600;
+  const m = Math.floor(sec / 60);    sec -= m * 60;
+  const s = sec;
+
+  const parts = [];
+  if (d) parts.push(`${d}d`);
+  if (h || d) parts.push(`${h}h`);
+  if (m || h || d) parts.push(`${m}m`);
+  parts.push(`${s}s`);
+  return parts.join(" ");
+}
+
+function relativeLine(status, startSec, endSec) {
+  const now = Math.floor(Date.now() / 1000);
+
+  if (status === "Upcoming") {
+    const toStart = startSec - now;
+    const toEnd = endSec - now;
+    return `Starts in ${fmtDuration(toStart)} • Ends in ${fmtDuration(toEnd)}`;
+  }
+
+  if (status === "Active") {
+    const toEnd = endSec - now;
+    return `Ends in ${fmtDuration(toEnd)}`;
+  }
+
+  if (status === "Ended") {
+    const sinceEnd = now - endSec;
+    return `Ended ${fmtDuration(sinceEnd)} ago`;
+  }
+
+  return "—";
+}
+
 function statusOf(now, p) {
   if (!p.exists) return "NotCreated";
   if (now < p.startTime) return "Upcoming";
@@ -129,7 +167,7 @@ async function enrichOnchain(pollsMeta) {
         minScore: Number(r[4]),
       };
     } catch (e) {
-      // если конкретный call упал — оставляем NotCreated для этого poll
+      // If a specific call fails, keep NotCreated for this poll
     }
 
     const status = statusOf(now, on);
@@ -212,7 +250,7 @@ function pollCard(p) {
       : `<a class="btn secondary" href="${voteHref}" style="opacity:.65; pointer-events:auto;">Details</a>`;
 
   const timeLine = p.onchain.exists
-    ? `${fmtDate(start)} → ${fmtDate(end)}`
+    ? relativeLine(status, start, end)
     : `Not created on-chain`;
 
   const minScoreLine = (p.onchain.exists)
@@ -266,17 +304,15 @@ function renderAll(state) {
   grid.innerHTML = "";
   for (const p of filtered) grid.appendChild(pollCard(p));
 
-  const total = state.polls.length;
-  const shown = filtered.length;
-
-  const created = state.polls.filter(p => p.status !== "NotCreated").length;
   const active = state.polls.filter(p => p.status === "Active").length;
   const upcoming = state.polls.filter(p => p.status === "Upcoming").length;
   const ended = state.polls.filter(p => p.status === "Ended").length;
+  const totalStatus = active + upcoming + ended;
 
   notice.innerHTML = `
-    <strong>On-chain:</strong> created ${created}/${total}.
-    <span class="muted"> Active: ${active} • Upcoming: ${upcoming} • Ended: ${ended} • Showing: ${shown}</span>
+    <span class="muted">
+      Total: ${totalStatus} • Active: ${active} • Upcoming: ${upcoming} • Ended: ${ended}
+    </span>
   `;
 }
 
@@ -288,12 +324,12 @@ function initAboutModal() {
 
   if (!btn || !modal || !closeBtn || !text) return;
 
-  // Текст модалки (как ты просил)
+  // ✅ ENGLISH TEXT
   text.innerHTML = `
-    <p>Привет от CredVote! Это платформа где проекты и люди могу разместить свой вопрос и получить мнение от проверенных веб юзеров.
-    Для проверки юзеров мы используем Ethos, вы можете выбрать абсолютно любое ограничение по Score для своего голосования.</p>
+    <p>Hi from CredVote! This is a platform where projects and individuals can post a question and collect feedback from verified web users.
+    For verification, we use Ethos — you can set any minimum Ethos Score requirement for your poll.</p>
 
-    <p>Люди с разным скором имеют разную силу голоса:<br>
+    <p>Users with different scores have different voting power:<br>
     0 = 1<br>
     1200 = 2<br>
     1400 = 3<br>
@@ -304,23 +340,23 @@ function initAboutModal() {
     2400 = 8<br>
     2600 = 9</p>
 
-    <p>Почему Ethos? Отличная модерация и тяжелый порог входа, что даёт высокую вероятность отсеивная ботов.</p>
+    <p>Why Ethos? Strong moderation and a high barrier to entry — which makes botting significantly harder.</p>
 
-    <p><b># Как это работает:</b></p>
+    <p><b># How it works</b></p>
 
-    <p>Вы создаёте голосование через админа (ссылка
+    <p>You create a poll via the admin (DM
       <a href="https://x.com/Makssay_eth" target="_blank" rel="noreferrer">https://x.com/Makssay_eth</a>):
-      вопрос, варианты, min Ethos score, сроки.</p>
+      question, options, min Ethos score, and time window.</p>
 
-    <p>Пользователь подключает кошелёк → мы проверяем Ethos score.</p>
-    <p>Если score ≥ min — он может голосовать, а его голос считается с нужным весом.</p>
-    <p>После завершения голосования вы видите прозрачные итоги: сколько голосов, какой суммарный вес, распределение по вариантам.</p>
+    <p>A user connects a wallet → we check their Ethos score.</p>
+    <p>If score ≥ min — they can vote, and their vote is counted with the correct weight.</p>
+    <p>After the poll ends, you get transparent results: raw votes, total weight, and distribution across options.</p>
 
-    <p><b># Зачем это вам</b></p>
+    <p><b># Why you’d use this</b></p>
 
-    <p>Быстро собрать фидбек от релевантных людей<br>
-    Сложнее накрутить (дорогой вход + модерация Ethos)<br>
-    Честнее результаты за счёт “веса доверия”, а не просто количества кликов</p>
+    <p>Collect feedback fast from relevant people<br>
+    Harder to manipulate (costly entry + Ethos moderation)<br>
+    More honest outcomes thanks to “trust-weighted” voting, not just clicks</p>
   `;
 
   const open = () => { modal.style.display = "block"; };
@@ -329,20 +365,16 @@ function initAboutModal() {
   btn.addEventListener("click", open);
   closeBtn.addEventListener("click", close);
 
-  // закрытие по клику по фону
   modal.addEventListener("click", (e) => {
     if (e.target === modal) close();
   });
 
-  // ESC
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
   });
 
-  // по умолчанию скрываем (на всякий)
   modal.style.display = "none";
 }
-
 
 async function loadAndRender(state, forceRefresh = false) {
   try {
@@ -383,9 +415,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     showNotCreated: false,
   };
 
+  initAboutModal();
   renderFilters(state);
   await loadAndRender(state, false);
+
+  setInterval(() => {
+    if (state.polls && state.polls.length) renderAll(state);
+  }, 1000);
 });
-
-
 

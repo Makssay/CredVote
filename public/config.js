@@ -5,14 +5,12 @@ window.ETHOS_CONFIG = {
     explorer: "https://basescan.org",
   },
 
-  // Важно: порядок имеет значение. Берём самые стабильные вверх.
+  // список RPC (первый — приоритетный)
+  // важно: они должны нормально работать из браузера
   rpcs: [
     "https://base-rpc.publicnode.com",
-    "https://base.public.blockpi.network/v1/rpc/public",
-    "https://base.meowrpc.com",
-    "https://base.llamarpc.com",
     "https://1rpc.io/base",
-    "https://mainnet.base.org",
+    "https://mainnet.base.org"
   ],
 
   // оставим для обратной совместимости

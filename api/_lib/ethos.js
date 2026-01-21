@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 const ETHOS_BASE = "https://api.ethos.network/api/v2";
 
 export async function getEthosScoreByAddress(address) {
@@ -32,3 +30,4 @@ export async function getEthosScoreByAddress(address) {
     level: String(j?.level ?? "unknown"),
   };
 }
+

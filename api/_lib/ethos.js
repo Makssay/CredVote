@@ -13,21 +13,12 @@ export async function getEthosScoreByAddress(address) {
     },
   });
 
-  if (r.status === 404) {
-    // user not found -> treat as 0
-    return { score: 0, level: "unknown" };
-  }
+  if (r.status === 404) return { score: 0, level: "unknown" };
 
-  if (!r.ok) {
-    const txt = await r.text().catch(() => "");
-    throw new Error(`Ethos score fetch failed (${r.status}): ${txt.slice(0, 200)}`);
-  }
+  const txt = await r.text().catch(() => "");
+  if (!r.ok) throw new Error(`Ethos score fetch failed (${r.status}): ${txt.slice(0, 200)}`);
 
-  const j = await r.json();
-  // Expected shape per docs: { score: number, level: string } :contentReference[oaicite:3]{index=3}
-  return {
-    score: Number(j?.score ?? 0),
-    level: String(j?.level ?? "unknown"),
-  };
+  const j = JSON.parse(txt);
+  return { score: Number(j?.score ?? 0), level: String(j?.level ?? "unknown") };
 }
 

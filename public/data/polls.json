@@ -13,8 +13,23 @@
       "question": "Do you like my app?",
       "details": "",
       "options": ["Yes", "50/50", "u noob"]
+    },
+    {
+      "id": "2",
+      "initiator": {
+        "name": "Keep",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/1912729744900255745/XAbO1knX_400x400.jpg",
+        "url": "https://x.com/keepyourpixel",
+        "ethosProfile": "https://app.ethos.network/profile/x/keepyourpixel"
+      },
+      "question": "Will we see Altseason in 2026?",
+      "details": "",
+      "options": ["Yes, summer", "Yes, spring", "Yes, autumn", "Yes, winter", "No"]
     }
   ]
 }
+
 
 

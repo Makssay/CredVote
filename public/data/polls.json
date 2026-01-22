@@ -27,9 +27,24 @@
       "question": "Will we see Altseason in 2026?",
       "details": "",
       "options": ["Yes, summer", "Yes, spring", "Yes, autumn", "Yes, winter", "No"]
+    },
+    {
+      "id": "3",
+      "initiator": {
+        "name": "MisterChe",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/2010223767507918849/6CTfZrJo_400x400.jpg",
+        "url": "https://x.com/cheworld",
+        "ethosProfile": "https://app.ethos.network/profile/x/cheworld"
+      },
+      "question": "The most reliable way to lose money in crypto",
+      "details": "",
+      "options": ["Trading", "Farming", "Memecoins", "trusting people with a low Ethos score"]
     }
   ]
 }
+
 
 
 

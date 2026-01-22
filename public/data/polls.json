@@ -41,9 +41,24 @@
       "question": "The most reliable way to lose money in crypto",
       "details": "",
       "options": ["Trading", "Farming", "Memecoins", "trusting people with a low Ethos score"]
+    },
+    {
+      "id": "4",
+      "initiator": {
+        "name": "Makssay",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/1988645121554870272/GPw8YHfG_400x400.jpg",
+        "url": "https://x.com/Makssay_eth",
+        "ethosProfile": "https://app.ethos.network/profile/x/Makssay_eth"
+      },
+      "question": "Wen Pharos TGE?",
+      "details": "There are a lot of rumors going around about this right now, but here are the facts: TGE will definitely happen after February 14, as they said during the AMA session. Also, the additional investment has not been disclosed yet, and they plan to reveal it before the TGE.",
+      "options": ["15 Feb - 25 Feb", "26 Feb - 5 Mar", "6 Mar - 16 Mar"]
     }
   ]
 }
+
 
 
 

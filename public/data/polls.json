@@ -69,9 +69,38 @@
       "question": "Will BNB reach $1,000 by March 2026?",
       "details": "",
       "options": ["Yes", "No"]
+    },
+    {
+      "id": "6",
+      "initiator": {
+        "name": "MaksSay",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/1988645121554870272/GPw8YHfG_400x400.jpg",
+        "url": "https://x.com/Makssay_eth",
+        "ethosProfile": "https://app.ethos.network/profile/x/Makssay_eth"
+      },
+      "question": "wen Base TGE?",
+      "details": "",
+      "options": ["Q1 2026", "Q2 2026", "Q3 2026", "Q4 2026"]
+    },
+    {
+      "id": "7",
+      "initiator": {
+        "name": "0xArdorTester | base.eth",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/1985425460667310080/qhcwvRB-_400x400.jpg",
+        "url": "https://x.com/ardortester",
+        "ethosProfile": "https://app.ethos.network/profile/x/ardortester"
+      },
+      "question": "Will DeFi projects be on trend again, or has this era already passed?",
+      "details": "",
+      "options": ["Has it passed yet?", "Unfortunately, it ended last year."]
     }
   ]
 }
+
 
 
 

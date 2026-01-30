@@ -1,0 +1,27 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "CredVote",
+    "homeUrl": "https://cred-vote.vercel.app/",
+    "iconUrl": "https://cred-vote.vercel.app/icon.png",
+    "splashImageUrl": "https://cred-vote.vercel.app/icon.png",
+    "splashBackgroundColor": "#071326",
+    "subtitle": "Ethos-weighted polls",
+    "description": "Weighted polls gated by Ethos reputation on Base.",
+    "primaryCategory": "social",
+    "tags": ["polls","reputation","base","ethos","voting"],
+    "tagline": "Vote with reputation",
+    "heroImageUrl": "https://cred-vote.vercel.app/og.png",
+    "screenshotUrls": [
+      "https://cred-vote.vercel.app/og.png"
+    ],
+    "ogTitle": "CredVote",
+    "ogDescription": "Ethos-weighted polls on Base.",
+    "ogImageUrl": "https://cred-vote.vercel.app/og.png"
+  }
+}

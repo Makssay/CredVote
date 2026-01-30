@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Vote • CredVote</title>
   <link rel="stylesheet" href="/styles.css" />
+
+  <!-- Mini App: call ready() ASAP -->
+  <script type="module" src="/miniapp-init.js"></script>
 </head>
 <body>
   <div class="container">
@@ -77,7 +80,6 @@
   <script src="/config.js"></script>
   <script src="/ethosPollAbi.js"></script>
   <script src="/vote.js"></script>
-  <script type="module" src="/miniapp-init.js"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {

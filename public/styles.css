@@ -643,3 +643,110 @@ html, body{
   .pill{ font-size: 12px; }
 }
 
+/* ============================
+   Mobile layout v2 (tighter + more native)
+   ============================ */
+
+@media (max-width: 520px){
+
+  .nav{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 4px;
+  }
+
+  /* brand + actions */
+  .nav .brand{
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: .2px;
+    flex: 0 0 auto;
+  }
+
+  /* this is the right-side controls row */
+  .nav .row{
+    width: auto !important;
+    justify-content: flex-end !important;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* keep About smaller */
+  #aboutBtn{
+    padding: 10px 12px;
+    min-height: 40px;
+  }
+
+  /* wallet label: becomes its own full-width line */
+  #walletLabel{
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 10px;
+  }
+
+  /* connect button should not be huge */
+  #connectBtn{
+    padding: 10px 14px;
+    min-height: 40px;
+  }
+
+  /* --- FILTERS: grid, not a tall column --- */
+  /* The filtersMount is inside .notice on index page */
+  #filtersMount{
+    width: 100%;
+  }
+
+  /* If filters UI uses .row, we turn it into grid */
+  #filtersMount .row{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  /* Make selects/inputs/buttons fill grid cells */
+  #filtersMount select,
+  #filtersMount input,
+  #filtersMount .btn{
+    width: 100% !important;
+  }
+
+  /* If there is a Refresh button in the filters area, make it span */
+  #filtersMount button,
+  #filtersMount .btn.primary,
+  #filtersMount .btn.secondary{
+    justify-content: center;
+  }
+
+  /* Common id used in your UI */
+  #refreshBtn,
+  #refreshResultsBtn{
+    width: 100%;
+  }
+
+  /* Reduce visual "balloon" effect */
+  .notice{
+    padding: 12px;
+  }
+  .panel{
+    padding: 14px;
+  }
+
+  /* Pills look better not overly centered */
+  .pill{
+    text-align: left;
+  }
+}
+
+/* On very narrow screens fall back to single column */
+@media (max-width: 390px){
+  #filtersMount .row{
+    grid-template-columns: 1fr;
+  }
+}
+

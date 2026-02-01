@@ -504,3 +504,142 @@ select, input, button{ color-scheme: dark; }
   .card::after, .panel::after, .notice::after, .modalCard::after{ display:none; }
   .btn, .card{ transition:none !important; }
 }
+
+
+
+   /*Mobile fixes for Base App*/
+
+
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Make the app breathe inside mobile webview */
+body{
+  padding-top: var(--safe-top);
+  padding-right: var(--safe-right);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+}
+
+/* Prevent horizontal overflow in webviews */
+html, body{
+  overflow-x: hidden;
+}
+
+/* Ensure long pills/labels don't push layout */
+.pill{
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Buttons: mobile tap targets */
+.btn{
+  min-height: 44px; /* iOS friendly */
+}
+
+/* ----------- Small screens ----------- */
+@media (max-width: 520px){
+  .container{
+    padding: 14px;
+  }
+
+  /* Top bar: stack nicely */
+  .nav{
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .nav .brand{
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  /* Any .row used in headers should wrap cleanly */
+  .row{
+    gap: 10px;
+  }
+
+  /* Make header controls go full width */
+  .nav .row{
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  /* Connect / pills: avoid cramping */
+  #walletLabel{
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
+
+  /* If you have multiple controls in one line, allow wrap */
+  .nav .row > *{
+    flex: 0 0 auto;
+  }
+
+  /* Panels / cards */
+  .panel{
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .notice{
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  /* Headings scale down */
+  .h1{
+    font-size: 22px;
+    line-height: 1.15;
+  }
+
+  /* Grid: force single column */
+  .grid{
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  /* Filters / toolbars area: stack */
+  #filtersMount .row{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Buttons/inputs inside filters should be full width */
+  #filtersMount .btn,
+  #filtersMount select,
+  #filtersMount input{
+    width: 100%;
+  }
+
+  /* Vote page options buttons look better full width */
+  .optionBtn{
+    width: 100%;
+  }
+
+  /* Results bars area spacing */
+  .barWrap{
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  /* Footer breathing room */
+  .footer{
+    padding-bottom: calc(10px + var(--safe-bottom));
+  }
+}
+
+/* ----------- Extra tiny devices ----------- */
+@media (max-width: 380px){
+  .container{ padding: 12px; }
+  .h1{ font-size: 20px; }
+  .btn{ font-size: 14px; }
+  .pill{ font-size: 12px; }
+}
+

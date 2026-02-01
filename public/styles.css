@@ -768,3 +768,21 @@ select{
 
 select::-ms-expand{ display:none; }
 
+
+select{
+  color-scheme: dark;                 
+  background-color: rgba(255,255,255,.06);
+}
+
+select option,
+select optgroup{
+  background-color: #0b1f38;          
+  color: rgba(255,255,255,.92);       
+}
+
+
+select option:checked{
+  background-color: #123154;
+}
+
+

@@ -181,6 +181,20 @@
       "question": "How much do you trust the Web3 ecosystem right now?",
       "details": "",
       "options": ["I fully trust it - Web3 has proven itself", "I partly trust it - big potential, but risks are still high", "I don’t trust it - too much scam and uncertainty"]
+    },
+    {
+      "id": "14",
+      "initiator": {
+        "name": "CredVote",
+        "type": "person",
+        "address": "0x2937416b9e66E0Af149f9864d70B5500f1844489",
+        "pfp": "https://pbs.twimg.com/profile_images/2017660137683509248/hsHADyIi_400x400.jpg",
+        "url": "https://x.com/CredVote",
+        "ethosProfile": "https://app.ethos.network"
+      },
+      "question": "How much do you trust the Web3 ecosystem right now?",
+      "details": "",
+      "options": ["I fully trust it - Web3 has proven itself", "I partly trust it - big potential, but risks are still high", "I don’t trust it - too much scam and uncertainty"]
     }
   ]
 }

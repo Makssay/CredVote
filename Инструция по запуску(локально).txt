@@ -1,8 +1,0 @@
-npm.cmd install
-
-npx.cmd vercel dev --listen 3000
-
-после открываем
-http://localhost:3000
-http://localhost:3000/admin.html
-http://localhost:3000/vote.html?id=1
